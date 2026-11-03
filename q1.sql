@@ -4,16 +4,14 @@ RETURNS TRIGGER
 AS
 $$
 BEGIN
-
-IF EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) OR EXISTS (SELECT * FROM loaded_on loaded where loaded.iso_6346 = NEW.iso_6346) THEN
-RETURN NEW;
-ELSE
-RAISE EXCEPTION 'Ccontainer is neither on a ship nor in a yard';
-END IF;
+	
+	IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) OR EXISTS (SELECT * FROM loaded_on loaded where loaded.iso_6346 = NEW.iso_6346) THEN
+		RAISE EXCEPTION 'Ccontainer is neither on a ship nor in a yard';
+	END IF;
 
 END;
 $$
-LANGUAGE plpgsql
+LANGUAGE plpgsql;
 
 
 CREATE CONSTRAINT TRIGGER on_insert_container
