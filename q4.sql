@@ -8,7 +8,7 @@ RETURNS TRIGGER AS
 $$
 BEGIN
 	IF TG_OP = 'INSERT' THEN
-		IF NEW.tier <> 1 AND NOT EXISTS (SELECT * FROM stored_at s WHERE s.tier = NEW.tier - 1) THEN
+		IF NEW.tier <> 1 AND NOT EXISTS (SELECT * FROM stored_at s WHERE s.tier = NEW.tier - 1) THEN   --Lifan: should add yard, bay, row check or the tier = tier -1 comparison can accept a different stack same tier.
 			RAISE EXCEPTION 'Container in a yard must either be on the ground or on top of another container';
 		END IF;
 
@@ -24,8 +24,8 @@ BEGIN
 
 	END IF;
 
-
-END
+	RETURN NULL;
+END;
 $$
 LANGUAGE plpgsql;
 
@@ -35,3 +35,5 @@ AFTER INSERT OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_consecutive_containers();
+
+--Lifan: i havent tested but can DEFERRED and NEW OLD coexist, im kinda confused.
