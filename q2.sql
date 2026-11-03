@@ -17,12 +17,12 @@ BEGIN
 	ELSEIF (TG_OP = 'DELETE') THEN
 		IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) THEN
 			RAISE EXCEPTION 'Container must either be on a ship or in a yard';
-		END IF
+		END IF;
 	
 	ELSE -- on update
 		IF NEW.iso_6346 <> OLD.iso_6346 AND NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = OLD.iso_6346) THEN
 			RAISE EXCEPTION 'Container must either be on a ship or in a yard';
-		END IF
+		END IF;
 		
 	END IF;
 
@@ -31,7 +31,7 @@ $$
 LANGUAGE plpgsql;
 
 CREATE CONSTRAINT TRIGGER on_stored_at_modified
-AFTER INSERT OR DELETE OR UPDATE ON stored_att
+AFTER INSERT OR DELETE OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_container_location();
