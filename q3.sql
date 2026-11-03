@@ -8,14 +8,14 @@ RETURNS TRIGGER AS
 $$
 BEGIN
 	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-		IF NOT EXISTS (SELECT * FROM yard y, category c WHERE y.code = NEW.code AND y.y.category_type = c.category_type AND c.max_tier <= NEW.tier) THEN
-			RAISE EXCEPTION 'Container in a yard cannot be stacked hgher than the maximum tier of that yard';
+		IF NOT EXISTS (SELECT * FROM yard y, category c WHERE y.code = NEW.code AND y.category_type = c.category_type AND c.max_tier >= NEW.tier) THEN
+			RAISE EXCEPTION 'Container in a yard cannot be stacked higher than the maximum tier of that yard';
 		END IF;
 
-	ELSEIF (TG_OP = 'UPDATE') THEN
+	ELSEIF (TG_OP = 'UPDATE') THEN   --is this dead code?
 		IF NOT EXISTS (SELECT * FROM yard y, category c)
 	END IF;
-
+	RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
@@ -27,3 +27,5 @@ AFTER INSERT OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_max_tier();
+
+--Lifan: 1. imo the triggers need verify on stored_at, category and yard right
