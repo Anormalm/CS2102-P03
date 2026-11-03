@@ -91,6 +91,8 @@ CREATE TABLE container (
 	CHECK (SUBSTRING(iso_6346 FROM 1 FOR 3) = company_code)
 );
 
+-- Unable to enforce that container cannot be stacked higher than the max tier of the yard,
+-- and unable to enforce that a container is either on the ground or on top of another container.
 CREATE TABLE stored_at (
 	iso_6346 VARCHAR(15) PRIMARY KEY,
 	FOREIGN KEY (iso_6346) REFERENCES container(iso_6346), 
