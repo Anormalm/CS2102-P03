@@ -1,4 +1,7 @@
 -- A container in a yard is either on the ground or on top of another container
+-- insert container check if tier = ground or exists container with tier-1
+-- delete container check if not exists container with tier + 1
+-- update container check if tier = ground or exists container with tier - 1 and if not exists container with tier + 1
 
 CREATE OR REPLACE FUNCTION verify_consecutive_containers()
 RETURNS TRIGGER AS
