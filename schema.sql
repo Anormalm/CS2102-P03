@@ -5,7 +5,11 @@ CREATE TABLE category (
 
 CREATE TABLE yard (
 	code VARCHAR(50) PRIMARY KEY,
-	category_type VARCHAR(50) NOT NULL REFERENCES category(category_type)
+	category_type VARCHAR(50) NOT NULL
+	    REFERENCES category(category_type)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE TABLE position(
@@ -16,7 +20,11 @@ CREATE TABLE position(
 	-- but this cannot be enforced without creating a foreign key to a non-minimal primary key
 	-- since category_type is the minimal primary key of category.
 	tier INTEGER CHECK (tier >= 1),
-	code VARCHAR(50) REFERENCES yard(code),
+	code VARCHAR(50)
+	    REFERENCES yard(code)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE,
 	PRIMARY KEY (bay, row, tier, code)
 );
 
@@ -27,9 +35,11 @@ CREATE TABLE country (
 
 CREATE TABLE city (
 	name VARCHAR(200),
-	country_name VARCHAR(60) 
-		REFERENCES country (name)
-		DEFERRABLE INITIALLY IMMEDIATE,
+	country_name VARCHAR(60)
+	    REFERENCES country (name)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE,
 	
 	PRIMARY KEY (name, country_name)
 );
@@ -42,9 +52,11 @@ CREATE TABLE company (
 	city_name VARCHAR(200) NOT NULL,
 	country_name VARCHAR(60) NOT NULL,
 	
-	FOREIGN KEY (city_name, country_name) 
-		REFERENCES city (name, country_name)
-		DEFERRABLE INITIALLY IMMEDIATE
+	FOREIGN KEY (city_name, country_name)
+	    REFERENCES city (name, country_name)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE TABLE berth (
@@ -70,9 +82,11 @@ CREATE TABLE ship (
 	-- The dock relationship is represented by berth_code.
 	berth_code VARCHAR(50) NOT NULL UNIQUE,
 	
-	FOREIGN KEY (berth_code) 
-		REFERENCES berth (code)
-		DEFERRABLE INITIALLY IMMEDIATE
+	FOREIGN KEY (berth_code)
+	    REFERENCES berth (code)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE
 );
 
 -- Unable to enforce that container must be in either ship or yard.
@@ -81,10 +95,12 @@ CREATE TABLE container (
 	content VARCHAR(50) NOT NULL,
 	
 	company_code VARCHAR(50) NOT NULL,	
-
+	
 	FOREIGN KEY (company_code)
-		REFERENCES company (company_code)
-		DEFERRABLE INITIALLY IMMEDIATE,
+	    REFERENCES company (company_code)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE,
 
 	-- Ownership is indicated by the first three letters of the
 	-- container's ISO identification.
@@ -95,7 +111,11 @@ CREATE TABLE container (
 -- and unable to enforce that a container is either on the ground or on top of another container.
 CREATE TABLE stored_at (
 	iso_6346 VARCHAR(15) PRIMARY KEY,
-	FOREIGN KEY (iso_6346) REFERENCES container(iso_6346), 
+	FOREIGN KEY (iso_6346)
+	    REFERENCES container (iso_6346)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE,
 	
 	bay INTEGER NOT NULL,
 	row INTEGER NOT NULL,
@@ -103,23 +123,30 @@ CREATE TABLE stored_at (
 	code VARCHAR(50) NOT NULL,
 
 	FOREIGN KEY (bay, row, tier, code)
-		REFERENCES position (bay, row, tier, code)
-		DEFERRABLE INITIALLY IMMEDIATE,
-
+	    REFERENCES position (bay, row, tier, code)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE,
+	
 	CONSTRAINT yard_pos UNIQUE (bay, row, tier, code)
 	
 );
 
 CREATE TABLE loaded_on (
 	iso_6346 VARCHAR(15) PRIMARY KEY,
-	FOREIGN KEY (iso_6346) REFERENCES container(iso_6346), 
+	FOREIGN KEY (iso_6346)
+	    REFERENCES container (iso_6346)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE,
 	
 	mmsi VARCHAR(9) NOT NULL,
 	
 	FOREIGN KEY (mmsi)
-		REFERENCES ship (mmsi)
-		ON DELETE CASCADE
-		DEFERRABLE INITIALLY IMMEDIATE
+	    REFERENCES ship (mmsi)
+	    ON UPDATE CASCADE
+	    ON DELETE CASCADE
+	    DEFERRABLE INITIALLY IMMEDIATE
 );
 
 
