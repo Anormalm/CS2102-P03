@@ -56,4 +56,3 @@ DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_consecutive_containers();
 
---Lifan: i havent tested but can DEFERRED and NEW OLD coexist, im kinda confused.
