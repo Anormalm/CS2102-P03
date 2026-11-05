@@ -18,12 +18,23 @@ LANGUAGE plpgsql;
 
 
 -- when container added, check not both
-CREATE CONSTRAINT TRIGGER on_stored_at_modified
+CREATE CONSTRAINT TRIGGER on_insert_container_both
 AFTER INSERT ON container
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_container_not_both();
 
+CREATE CONSTRAINT TRIGGER on_stored_at_modified
+AFTER INSERT OR UPDATE ON stored_at
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION verify_container_not_both();
+
+CREATE CONSTRAINT TRIGGER on_loaded_on_modified
+AFTER INSERT OR UPDATE ON loaded_on
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION verify_container_not_both();
 --Lifan: 1. we dont need delete in Q2 right, technically when we delete its impossible to cause a container to be on both.
 -- 2. is the first part equivalent using a two table JOIN?  or maybe im trippin
 -- IF EXISTS (
