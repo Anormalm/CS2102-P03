@@ -8,9 +8,8 @@ CREATE OR REPLACE FUNCTION verify_max_tier()
 RETURNS TRIGGER AS
 $$
 BEGIN
-
-	IF NOT EXISTS (SELECT * FROM yard y, category c WHERE y.code = NEW.code AND y.category_type = c.category_type AND c.max_tier >= NEW.tier) THEN
-		RAISE EXCEPTION 'Container in a yard cannot be stacked higher than the maximum tier of that yard';
+	IF EXISTS (SELECT * FROM stored_at s, yard y, category c WHERE s.code = y.code AND y.category_type = c.type AND s.tier > c.max_tier) THEN
+		RAISE EXCEPTION 'Container in a yard cannot be in a state where it is stacked higher than the maximum tier of that yard';
 	END IF;
 
 	RETURN NULL;
@@ -24,8 +23,8 @@ DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_max_tier();
 
-CREATE CONSTRAINT TRIGGER on_max_tier_modified
-AFTER UPDATE ON stored_at
+CREATE CONSTRAINT TRIGGER on_category_updated
+AFTER UPDATE ON category
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_max_tier();
