@@ -44,8 +44,8 @@ BEGIN
 
 	END IF;
 
-
-END
+	RETURN NULL;
+END;
 $$
 LANGUAGE plpgsql;
 
@@ -55,3 +55,4 @@ AFTER INSERT OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_consecutive_containers();
+
