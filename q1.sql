@@ -4,11 +4,15 @@ RETURNS TRIGGER
 AS
 $$
 BEGIN
-	
-	IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) AND NOT EXISTS (SELECT * FROM loaded_on loaded where loaded.iso_6346 = NEW.iso_6346) THEN
-		RAISE EXCEPTION 'Container is neither on a ship nor in a yard';
+	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THENF
+		IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) AND NOT EXISTS (SELECT * FROM loaded_on loaded where loaded.iso_6346 = NEW.iso_6346) THEN
+			RAISE EXCEPTION 'Container is neither on a ship nor in a yard';
+		END IF;
+	ELSE -- for deletion events only on the storage tables
+		IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = OLD.iso_6346) AND NOT EXISTS (SELECT * FROM loaded_on loaded where loaded.iso_6346 = OLD.iso_6346) THEN
+			RAISE EXCEPTION 'Container is neither on a ship nor in a yard';
+		END IF;		
 	END IF;
-
 	RETURN NULL;
 END;
 $$
