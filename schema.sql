@@ -68,25 +68,27 @@ CREATE TABLE berth (
 	-- VARCHAR is therefore used to support the prescribed operations.
 	code VARCHAR(50) PRIMARY KEY,
 	
-	CONSTRAINT berth_position UNIQUE (longitude, latitude)
+	CONSTRAINT berth_position UNIQUE (longitude, latitude) DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE TABLE ship (
-	mmsi VARCHAR(9) PRIMARY KEY,
-	imo_number VARCHAR(10) UNIQUE NOT NULL,
-	call_sign VARCHAR(20) UNIQUE NOT NULL,
-	name VARCHAR(100) NOT NULL,
-	width DECIMAL(8, 2) NOT NULL CHECK (width > 0),
-	length DECIMAL(8, 2) NOT NULL CHECK (length > 0),
-
-	-- The dock relationship is represented by berth_code.
-	berth_code VARCHAR(50) NOT NULL UNIQUE,
-	
-	FOREIGN KEY (berth_code)
-	    REFERENCES berth (code)
-	    ON UPDATE CASCADE
-	    ON DELETE CASCADE
-	    DEFERRABLE INITIALLY IMMEDIATE
+    mmsi VARCHAR(9) PRIMARY KEY,
+    imo_number VARCHAR(10) NOT NULL,
+    call_sign VARCHAR(20) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    width DECIMAL(8, 2) NOT NULL CHECK (width > 0),
+    length DECIMAL(8, 2) NOT NULL CHECK (length > 0),
+    berth_code VARCHAR(50) NOT NULL,
+    
+    UNIQUE (imo_number) DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE (call_sign) DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE (berth_code) DEFERRABLE INITIALLY DEFERRED,
+    
+    FOREIGN KEY (berth_code)
+        REFERENCES berth (code)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        DEFERRABLE INITIALLY IMMEDIATE
 );
 
 -- Unable to enforce that container must be in either ship or yard.
@@ -128,7 +130,7 @@ CREATE TABLE stored_at (
 	    ON DELETE CASCADE
 	    DEFERRABLE INITIALLY IMMEDIATE,
 	
-	CONSTRAINT yard_pos UNIQUE (bay, row, tier, code)
+	CONSTRAINT yard_pos UNIQUE (bay, row, tier, code) DEFERRABLE INITIALLY IMMEDIATE
 	
 );
 

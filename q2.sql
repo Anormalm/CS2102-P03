@@ -1,37 +1,31 @@
 -- A container must either be on a ship or in a yard (but not both).
--- insertion to container table is logically handled by q1 trigger 
--- however, another violation of this constraint could be insertion, deletion or update of row in (ship) or (yard) 
--- this trigger should check whether if insert into ship whether container cannot exist in yard; if delete from ship container must exist in yard; if update to ship then container iso is affected
+-- We only need to check that it is not on both stored_at and loaded_on
+-- as combined with the trigger from q1 we gurantee that the container is either
+-- on a ship or on a yard
 
-CREATE OR REPLACE FUNCTION verify_container_location()
+CREATE OR REPLACE FUNCTION verify_container_not_both()
 RETURNS TRIGGER
 AS
 $$
 BEGIN
-	IF TG_OP = 'INSERT' THEN
-	
-		IF EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) THEN
-			RAISE EXCEPTION 'Container must not be in both ship or yard';
-		END IF;
-	
-	ELSEIF (TG_OP = 'DELETE') THEN
-		IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) THEN
-			RAISE EXCEPTION 'Container must either be on a ship or in a yard';
-		END IF;
-	
-	ELSE -- on update
-		IF NEW.iso_6346 <> OLD.iso_6346 AND NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = OLD.iso_6346) THEN
-			RAISE EXCEPTION 'Container must either be on a ship or in a yard';
-		END IF;
-		
+    IF EXISTS (SELECT 1 FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) 
+		AND EXISTS (SELECT 1 FROM loaded_on l WHERE l.iso_6346 = NEW.iso_6346) THEN
+		RAISE EXCEPTION 'Container % cannot be both on a ship or at a yard', NEW.iso_6346;
 	END IF;
 
+    RETURN NULL;
 END;
 $$
 LANGUAGE plpgsql;
 
-CREATE CONSTRAINT TRIGGER on_stored_at_modified
-AFTER INSERT OR DELETE OR UPDATE ON stored_at
+CREATE CONSTRAINT TRIGGER modified_stored_at_not_both
+AFTER INSERT OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
-EXECUTE FUNCTION verify_container_location();
+EXECUTE FUNCTION verify_container_not_both();
+
+CREATE CONSTRAINT TRIGGER modified_loaded_on_not_both
+AFTER INSERT OR UPDATE ON loaded_on
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION verify_container_not_both();
