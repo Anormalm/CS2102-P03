@@ -18,6 +18,8 @@ BEGIN
         has_match := FALSE;
     END IF;
 
+	RETURN has_match;
+
 END;
 
 $$
@@ -51,7 +53,7 @@ LANGUAGE plpgsql;
 
 
 CREATE CONSTRAINT TRIGGER on_stored_at_loc_modifed
-AFTER INSERT OR UPDATE ON stored_at
+AFTER INSERT OR DELETE OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_consecutive_containers();

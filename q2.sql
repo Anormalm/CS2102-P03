@@ -8,7 +8,7 @@ AS
 $$
 BEGIN
 	IF EXISTS (SELECT * from stored_at s WHERE s.iso_6346 = NEW.iso_6346) AND EXISTS (SELECT * from loaded_on ld WHERE ld.iso_6346 = NEW.iso_6346) THEN
-		RAISE EXCEPTION 'Container must not be both on a ship and in a yard'
+		RAISE EXCEPTION 'Container must not be both on a ship and in a yard';
 	END IF;
 	RETURN NULL;
 	
