@@ -1,41 +1,28 @@
 -- A container must either be on a ship or in a yard (but not both).
--- insertion to container table is logically handled by q1 trigger 
--- however, another violation of this constraint could be insertion, deletion or update of row in (ship) or (yard) 
--- this trigger should check whether if insert into ship whether container cannot exist in yard; if delete from ship container must exist in yard; if update to ship then container iso is affected
+-- insertion to at least ones is logically handled by q1 trigger 
+-- this trigger should check whether if insert into container whether in both places
 
-CREATE OR REPLACE FUNCTION verify_container_location()
+CREATE OR REPLACE FUNCTION verify_container_not_both()
 RETURNS TRIGGER
 AS
 $$
 BEGIN
-	IF TG_OP = 'INSERT' THEN
-	
-		IF EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) THEN
-			RAISE EXCEPTION 'Container must not be in both ship or yard';
-		END IF;
-	
-	ELSEIF (TG_OP = 'DELETE') THEN
-		IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) THEN
-			RAISE EXCEPTION 'Container must either be on a ship or in a yard';
-		END IF;
-	
-	ELSE -- on update
-		IF NEW.iso_6346 <> OLD.iso_6346 AND NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = OLD.iso_6346) THEN
-			RAISE EXCEPTION 'Container must either be on a ship or in a yard';
-		END IF;
-		
+	IF EXISTS (SELECT * from stored_at s WHERE s.iso_6346 = NEW.iso_6346) AND EXISTS (SELECT * from loaded_on ld WHERE ld.iso_6346 = NEW.iso_6346) THEN
+		RAISE EXCEPTION 'Container must not be both on a ship and in a yard'
 	END IF;
 	RETURN NULL;
+	
 END;
 $$
 LANGUAGE plpgsql;
 
+
+-- when container added, check not both
 CREATE CONSTRAINT TRIGGER on_stored_at_modified
-AFTER INSERT OR DELETE OR UPDATE ON stored_at
+AFTER INSERT ON container
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
-EXECUTE FUNCTION verify_container_location();
-
+EXECUTE FUNCTION verify_container_not_both();
 
 --Lifan: 1. we dont need delete in Q2 right, technically when we delete its impossible to cause a container to be on both.
 -- 2. is the first part equivalent using a two table JOIN?  or maybe im trippin
