@@ -4,7 +4,7 @@ RETURNS TRIGGER
 AS
 $$
 BEGIN
-	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THENF
+	IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
 		IF NOT EXISTS (SELECT * FROM stored_at s WHERE s.iso_6346 = NEW.iso_6346) AND NOT EXISTS (SELECT * FROM loaded_on loaded where loaded.iso_6346 = NEW.iso_6346) THEN
 			RAISE EXCEPTION 'Container is neither on a ship nor in a yard';
 		END IF;
