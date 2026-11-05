@@ -16,7 +16,7 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE CONSTRAINT TRIGGER on_stored_at_modified
+CREATE CONSTRAINT TRIGGER on_stored_at_max_tier   --original name used in Q2
 AFTER INSERT OR UPDATE ON stored_at
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
@@ -34,4 +34,3 @@ DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_max_tier();
 
---Lifan: 1. imo the triggers need verify on stored_at, category and yard right
