@@ -43,3 +43,15 @@ AFTER UPDATE OR DELETE ON loaded_on
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION verify_container_is_stored();
+
+CREATE CONSTRAINT TRIGGER on_delete_or_update_loaded_on
+AFTER DELETE OR UPDATE ON loaded_on 
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION verify_container_is_stored();
+
+
+--1. Deletion and Updating WILL threaten illegal state cuz technically in this case:
+-- container - A    stored_at - A  loaded_on - NULL   
+-- then we do DELETE FROM stored_at WHERE iso_6346 = 'A';   this will violate cuz A is in neither location but still exist. So its possible to do two separate constraint trigger on loaded and stored
+--2. NEW.iso_6346 can just not exist where the container is NULL right.....? we can do a separate var like c in container where c.iso = NEW.iso.
